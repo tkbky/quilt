@@ -4,7 +4,7 @@ ci:
 
 deploy:
   override:
-    - npm install --no-progress
+    - YARN_PRODUCTION=false yarn install
     - node_modules/.bin/lerna bootstrap
     - ls -lr node_modules
 
