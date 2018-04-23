@@ -1,3 +1,10 @@
 ci:
   require:
     - ci/circleci
+
+deploy:
+  override:
+    - npm install --no-progress
+    - node_modules/.bin/lerna bootstrap
+    - ls -lr node_modules
+
