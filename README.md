@@ -38,6 +38,10 @@ This repository uses [lerna](https://github.com/lerna/lerna) to manage it's pack
 
 Check out our [Contributing Guidelines](CONTRIBUTING.md)
 
+## Creating a new package
+
+- `yarn run geneate`
+
 ## License
 
 MIT &copy; [Shopify](https://shopify.com/), see [LICENSE.md](LICENSE.md) for details.
