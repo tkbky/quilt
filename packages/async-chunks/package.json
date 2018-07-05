@@ -30,7 +30,10 @@
     "react-loadable": "^5.4.0"
   },
   "devDependencies": {
-    "typescript": "~2.7.2"
+    "@shopify/sewing-kit": "^0.49.1",
+    "@types/webpack": "^4.4.5",
+    "typescript": "~2.7.2",
+    "webpack": "^4.15.1"
   },
   "peerDependencies": {
     "react": "^16.3.2"

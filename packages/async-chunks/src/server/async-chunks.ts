@@ -33,7 +33,7 @@ export const defaultManifest = resolve(
 
 let asyncAssetsManifest: Promise<Manifest> | null = null;
 
-function loadAsyncAssetsManifest(manifest) {
+function loadAsyncAssetsManifest(manifest: string) {
   if (asyncAssetsManifest) {
     return asyncAssetsManifest;
   }
@@ -67,10 +67,15 @@ export default class AsyncChunks {
     return {scripts, styles};
   }
 
-  matchAssets(manifest, moduleIds): Asset[] {
+  matchAssets(manifest: Manifest | null, moduleIds: string[]): Asset[] {
     const chunks: ChunkDependency[] = [];
 
-    if (!manifest[moduleIds]) {
+    if (manifest === null) {
+      return [];
+    }
+
+    const nonExistentModules = moduleIds.find(module => !manifest[module]);
+    if (nonExistentModules) {
       return [];
     }
 

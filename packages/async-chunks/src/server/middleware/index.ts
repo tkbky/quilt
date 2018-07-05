@@ -9,9 +9,7 @@ export interface State {
   asyncChunks: AsyncChunks;
 }
 
-export function koaMiddleware(
-  {manifest}: Options = {manifest: defaultManifest},
-) {
+export function middleware({manifest}: Options = {manifest: defaultManifest}) {
   return async function asyncChunks(ctx: Context, next: () => Promise<any>) {
     ctx.state.asyncChunks = new AsyncChunks(manifest);
     await next();

@@ -1,4 +1,4 @@
-import AsyncChunks, {clearCache, defaultManifest} from '../async-chunks';
+import AsyncChunks, {clearCache, defaultManifest} from '../server/async-chunks';
 import manifest from './fixtures/manifest';
 
 const manifestPath = '../somePath/someManifest.json';
