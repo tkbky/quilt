@@ -15,10 +15,10 @@ export interface ReactLoadableMetadata {
   [bundle: string]: BundleDependency[];
 }
 
-export class ReactLoadablePlugin implements webpack.Plugin {
+export class AsyncChunksPlugin implements webpack.Plugin {
   apply(compiler: webpack.Compiler) {
     compiler.hooks.afterEmit.tapAsync(
-      'ReactLoadablePlugin',
+      'AsyncChunksPlugin',
       async (compilation, callback) => {
         const manifest: ReactLoadableMetadata = {};
         const context = compiler.options.context;
@@ -43,7 +43,7 @@ export class ReactLoadablePlugin implements webpack.Plugin {
 
           for (const block of chunkGroup.blocksIterable) {
             let name;
-            let id = null;
+            let id;
             const dependency = block.module.dependencies.find(
               (dep: any) => block.request === dep.request,
             );
