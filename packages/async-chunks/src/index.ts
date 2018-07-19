@@ -1,1 +1,3 @@
-export {default as LoadableChunk} from 'react-loadable';
+import AsyncChunk from 'react-loadable';
+
+export default AsyncChunk;

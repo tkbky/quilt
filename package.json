@@ -63,7 +63,8 @@
     "moduleFileExtensions": [
       "ts",
       "tsx",
-      "js"
+      "js",
+      "json"
     ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest",
