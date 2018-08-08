@@ -1,3 +1,4 @@
-import AsyncChunk from 'react-loadable';
+import AsyncChunks from './client';
 
-export default AsyncChunk;
+export * from './client';
+export default AsyncChunks;

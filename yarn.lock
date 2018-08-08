@@ -453,13 +453,6 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-loadable@^5.4.0":
-  version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@types/react-loadable/-/react-loadable-5.4.0.tgz#7a4f0673de07473525ab27959cf4c2601e25f37f"
-  dependencies:
-    "@types/react" "*"
-    "@types/webpack" "*"
-
 "@types/react-router@^3.0.0":
   version "3.0.15"
   resolved "https://registry.yarnpkg.com/@types/react-router/-/react-router-3.0.15.tgz#b55b0dc5ad8f6fa66b609f0efc390b191381d082"
@@ -497,15 +490,6 @@
   resolved "https://registry.yarnpkg.com/@types/uglify-js/-/uglify-js-3.0.2.tgz#f30c75458d18e8ee885c792c04adcb78a13bc286"
   dependencies:
     source-map "^0.6.1"
-
-"@types/webpack@*":
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/@types/webpack/-/webpack-4.4.0.tgz#c0551b772be241d786c0548812dd75a932f8efb4"
-  dependencies:
-    "@types/node" "*"
-    "@types/tapable" "*"
-    "@types/uglify-js" "*"
-    source-map "^0.6.0"
 
 "@types/webpack@^4.4.5":
   version "4.4.5"

@@ -15,6 +15,7 @@ export interface ReactLoadableMetadata {
   [bundle: string]: BundleDependency[];
 }
 
+// TODO: add sha integrities
 export class AsyncChunksPlugin implements webpack.Plugin {
   apply(compiler: webpack.Compiler) {
     compiler.hooks.afterEmit.tapAsync(

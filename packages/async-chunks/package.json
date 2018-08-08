@@ -25,9 +25,7 @@
   "dependencies": {
     "@shopify/react-utilities": "^2.0.2",
     "@types/koa": "2.0.39",
-    "@types/react-loadable": "^5.4.0",
-    "koa": "^2.5.1",
-    "react-loadable": "^5.4.0"
+    "koa": "^2.5.1"
   },
   "devDependencies": {
     "@shopify/sewing-kit": "^0.49.1",

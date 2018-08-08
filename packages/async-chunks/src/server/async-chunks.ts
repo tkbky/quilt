@@ -67,7 +67,16 @@ export default class AsyncChunks {
     return {scripts, styles};
   }
 
-  matchAssets(manifest: Manifest | null, moduleIds: string[]): Asset[] {
+  async getAsyncChunksManifest() {
+    try {
+      const manifest = await loadAsyncAssetsManifest(this.manifestPath);
+      return manifest;
+    } catch (error) {
+      throw new Error(`Manifest not found: ${this.manifestPath}`);
+    }
+  }
+
+  private matchAssets(manifest: Manifest | null, moduleIds: string[]): Asset[] {
     const chunks: ChunkDependency[] = [];
 
     if (manifest === null) {
@@ -86,14 +95,5 @@ export default class AsyncChunks {
       .map((chunk: any) => {
         return {path: chunk.publicPath};
       });
-  }
-
-  async getAsyncChunksManifest() {
-    try {
-      const manifest = await loadAsyncAssetsManifest(this.manifestPath);
-      return manifest;
-    } catch (error) {
-      throw new Error(`Manifest not found: ${this.manifestPath}`);
-    }
   }
 }
