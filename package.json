@@ -9,7 +9,6 @@
   "scripts": {
     "publish": "lerna publish",
     "prebuild": "yarn run clean",
-    "dev": "lerna exec --parallel -- tsc --watch",
     "build": "lerna run build",
     "lint": "yarn eslint '**/*.{ts,tsx}'",
     "ci:lint-docs": "yarn generate docs && test -z \"$(git status --porcelain)\" || echo 'The root README has not been updated. Run `yarn generate docs` in the root of your quilt directory and try again.'",
@@ -34,7 +33,6 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@shopify/sewing-kit": "^0.49.1",
     "@types/jest": "^23.1.1",
     "@types/react-helmet": "^5.0.6",
     "codecov": "^3.0.2",
