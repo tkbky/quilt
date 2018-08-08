@@ -1,17 +1,19 @@
-// TODO: refactor to makes this more readable
 export default function babelPluginAsyncChunks(babel) {
   const {types: t} = babel;
   return {
     visitor: {
       ImportDeclaration(path: any) {
+        // Bail if source is not @shopify/async-chunks
         const source = path.node.source.value;
-        if (source !== '@shopify/async-chunks') return;
+        if (source !== '@shopify/async-chunks') {
+          return;
+        }
 
-        const defaultSpecifier = path.get('specifiers').find(specifier => {
-          return specifier.isImportDefaultSpecifier();
-        });
-
-        if (!defaultSpecifier) return;
+        // We only want to tranpsile default imports, which is the HOC
+        const defaultSpecifier = defaultImport(path);
+        if (!defaultSpecifier) {
+          return;
+        }
 
         const bindingName = defaultSpecifier.node.local.name;
         const binding = path.scope.getBinding(bindingName);
@@ -27,13 +29,19 @@ export default function babelPluginAsyncChunks(babel) {
             callExpression = callExpression.parentPath;
           }
 
-          if (!callExpression.isCallExpression()) return;
+          if (!callExpression.isCallExpression()) {
+            return;
+          }
 
           const args = callExpression.get('arguments');
-          if (args.length !== 1) throw callExpression.error;
+          if (args.length !== 1) {
+            throw callExpression.error;
+          }
 
           const options = args[0];
-          if (!options.isObjectExpression()) return;
+          if (!options.isObjectExpression()) {
+            return;
+          }
 
           const properties = options.get('properties');
           const propertiesMap: any = {};
@@ -56,40 +64,59 @@ export default function babelPluginAsyncChunks(babel) {
             },
           });
 
-          if (!dynamicImports.length) return;
+          if (!dynamicImports.length) {
+            return;
+          }
 
-          propertiesMap.loader.insertAfter(
-            t.objectProperty(
-              t.identifier('webpack'),
-              t.arrowFunctionExpression(
-                [],
-                t.arrayExpression(
-                  dynamicImports.map(dynamicImport => {
-                    return t.callExpression(
-                      t.memberExpression(
-                        t.identifier('require'),
-                        t.identifier('resolveWeak'),
-                      ),
-                      [dynamicImport.get('arguments')[0].node],
-                    );
-                  }),
-                ),
-              ),
-            ),
-          );
-
-          propertiesMap.loader.insertAfter(
-            t.objectProperty(
-              t.identifier('modules'),
-              t.arrayExpression(
-                dynamicImports.map(dynamicImport => {
-                  return dynamicImport.get('arguments')[0].node;
-                }),
-              ),
-            ),
-          );
+          insertMetadata(t, propertiesMap, dynamicImports);
         });
       },
     },
   };
+}
+
+function defaultImport(path) {
+  return path.get('specifiers').find(specifier => {
+    return specifier.isImportDefaultSpecifier();
+  });
+}
+
+function insertMetadata(t, propertiesMap, dynamicImports) {
+  insertWebpackMetadata(t, propertiesMap, dynamicImports);
+  insertModulesMetadata(t, propertiesMap, dynamicImports);
+}
+
+function insertModulesMetadata(t, propertiesMap, dynamicImports) {
+  propertiesMap.loader.insertAfter(
+    t.objectProperty(
+      t.identifier('modules'),
+      t.arrayExpression(
+        dynamicImports.map(dynamicImport => {
+          return dynamicImport.get('arguments')[0].node;
+        }),
+      ),
+    ),
+  );
+}
+
+function insertWebpackMetadata(t, propertiesMap, dynamicImports) {
+  propertiesMap.loader.insertAfter(
+    t.objectProperty(
+      t.identifier('webpack'),
+      t.arrowFunctionExpression(
+        [],
+        t.arrayExpression(
+          dynamicImports.map(dynamicImport => {
+            return t.callExpression(
+              t.memberExpression(
+                t.identifier('require'),
+                t.identifier('resolveWeak'),
+              ),
+              [dynamicImport.get('arguments')[0].node],
+            );
+          }),
+        ),
+      ),
+    ),
+  );
 }

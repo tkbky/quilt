@@ -26,7 +26,6 @@ describe('@shopify/async-chunks/babel transformation', () => {
   });
   it('does not change the loader proptery', () => {
     expect(transform(code)).toContain(
-      // TODO: why does it add a space?
       `loader: () => import( /* webpackChunkName: 'homeIndex' */'./HomeIndex'),`,
     );
   });
@@ -49,9 +48,6 @@ function transform(code) {
     .transform(code, {
       babelrc: false,
       plugins: ['syntax-dynamic-import', [babelPluginAsyncChunks]],
-      // parserOpts: {
-      //   plugins: ['tsx'],
-      // },
     })
     .code.trim();
 }

@@ -5,7 +5,7 @@ const manifestPath = '../somePath/someManifest.json';
 
 jest.mock('fs-extra', () => ({
   readJSON: jest.fn(() =>
-    Promise.resolve(require('./manifest-fixture').default),
+    Promise.resolve(require('./fixtures/manifest').default),
   ),
 }));
 
