@@ -1,29 +1,17 @@
 import * as React from 'react';
 import {func, shape} from 'prop-types';
-import {chunkLoader, ChunkState} from './chunkLoader';
+import {
+  render,
+  isWebpackReady,
+  flushInitializers,
+  ChunkState,
+  chunkLoader,
+} from './utilities';
 
-type Initializer = () => React.ReactNode;
+export type Initializer = () => React.ReactNode;
 
 const ALL_INITIALIZERS: Initializer[] = [];
 const READY_INITIALIZERS: Initializer[] = [];
-
-// eslint-disable-next-line camelcase
-declare const __webpack_modules__: any;
-
-function isWebpackReady(getModuleIds) {
-  // eslint-disable-next-line camelcase
-  if (typeof __webpack_modules__ !== 'object') {
-    return false;
-  }
-
-  return getModuleIds().every(moduleId => {
-    return (
-      typeof moduleId !== 'undefined' &&
-      // eslint-disable-next-line camelcase
-      typeof __webpack_modules__[moduleId] !== 'undefined'
-    );
-  });
-}
 
 interface Options {
   loader: Promise<any> | null;
@@ -35,15 +23,10 @@ interface Options {
   webpack?: () => Promise<any>[];
 }
 
-function resolve(obj) {
-  return obj && obj.__esModule ? obj.default : obj;
-}
-
-function render(loaded, props) {
-  return React.createElement(resolve(loaded), props);
-}
-
-function createLoadableComponent(chunkLoader, options: Options) {
+function asyncChunkGenerator(
+  chunkLoader: (loader) => ChunkState,
+  options: Options,
+) {
   if (!options.loading) {
     throw new Error('@shopify/async-chunks requires a `loading` component');
   }
@@ -135,9 +118,8 @@ function createLoadableComponent(chunkLoader, options: Options) {
 
     render() {
       if (this.chunkState.loading || this.chunkState.error) {
-        // TODO: get opts.loading to work in React.createElement
-        // const loading = opts.loading ? opts.loading : 'loading';
-        return React.createElement('div', {
+        const loading = opts.loading ? opts.loading : 'loading';
+        return React.createElement(loading as any, {
           isLoading: this.chunkState.loading,
           pastDelay: this.chunkState.pastDelay,
           timedOut: this.chunkState.timedOut,
@@ -153,6 +135,7 @@ function createLoadableComponent(chunkLoader, options: Options) {
 
     loadModule() {
       if (this.context.loadable && Array.isArray(opts.modules)) {
+        // report SSR modules with the module name (i.e the async chunks detected)
         opts.modules.forEach(moduleName => {
           this.context.loadable.report(moduleName);
         });
@@ -192,9 +175,9 @@ function createLoadableComponent(chunkLoader, options: Options) {
         this._clearTimeouts();
       };
 
-      chunk &&
-        chunk.promise &&
-        chunk.promise
+      const promise = chunk && chunk.promise;
+      promise &&
+        promise
           // eslint-disable-next-line
           .then(() => {
             update();
@@ -205,56 +188,6 @@ function createLoadableComponent(chunkLoader, options: Options) {
           });
     }
   };
-}
-
-export interface Props {
-  report(moduleName: string): number;
-}
-
-// TODO: Move out of client since it's used on the server?
-export class Capture extends React.Component<Props, never> {
-  static childContextTypes = {
-    loadable: shape({
-      report: func.isRequired,
-    }).isRequired,
-  };
-
-  getChildContext() {
-    const {report} = this.props;
-    return {
-      loadable: {
-        report,
-      },
-    };
-  }
-
-  render() {
-    const {children} = this.props;
-    return React.Children.only(children);
-  }
-}
-
-function flushInitializers(initializers: Initializer[]) {
-  const promises: React.ReactNode[] = [];
-
-  while (initializers.length) {
-    const init = initializers.pop();
-    if (init) {
-      promises.push(init());
-    }
-  }
-
-  return (
-    Promise.all(promises)
-      // eslint-disable-next-line consistent-return
-      .then(() => {
-        // eslint-disable-next-line promise/always-return
-        if (initializers.length) {
-          return flushInitializers(initializers);
-        }
-      })
-      .catch(error => error)
-  );
 }
 
 export function preloadAll() {
@@ -272,6 +205,6 @@ export function preloadReady() {
   });
 }
 
-export default function Loadable(opts) {
-  return createLoadableComponent(chunkLoader, opts);
+export default function asyncChunk(opts) {
+  return asyncChunkGenerator(chunkLoader, opts);
 }

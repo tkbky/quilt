@@ -1,4 +1,4 @@
-import AsyncChunks from './client';
+import AsyncChunks from './components';
 
-export * from './client';
+export * from './components';
 export default AsyncChunks;
