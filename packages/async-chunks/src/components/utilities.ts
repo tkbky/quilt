@@ -55,6 +55,8 @@ export interface ChunkState {
   promise: Promise<any> | null;
   loadedChunk: React.ReactNode | null;
   error: Error | null;
+  pastDelay?: boolean;
+  timedOut?: boolean;
 }
 
 export function chunkLoader(chunkLoader): ChunkState {

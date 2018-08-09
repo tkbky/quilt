@@ -70,14 +70,22 @@ function asyncChunkGenerator(
     }),
   };
 
-  return class LoadableComponent extends React.Component {
+  return class LoadableComponent extends React.Component<{}, ChunkState> {
     static contextTypes = contextTypes;
 
     static preload() {
       return init();
     }
 
-    chunkState;
+    state: ChunkState = {
+      error: chunk && chunk.error,
+      pastDelay: false,
+      timedOut: false,
+      loading: (chunk && chunk.loading) || false,
+      loadedChunk: chunk && chunk.loadedChunk,
+      promise: null,
+    };
+
     delay;
     timeout;
     mounted = false;
@@ -85,14 +93,6 @@ function asyncChunkGenerator(
     constructor(props) {
       super(props);
       init();
-
-      this.chunkState = {
-        error: chunk && chunk.error,
-        pastDelay: false,
-        timedOut: false,
-        loading: chunk && chunk.loading,
-        loaded: chunk && chunk.loadedChunk,
-      };
     }
 
     componentWillMount() {
@@ -102,32 +102,22 @@ function asyncChunkGenerator(
 
     componentWillUnmount() {
       this.mounted = false;
-      this._clearTimeouts();
+      this.clearTimeouts();
     }
-
-    _clearTimeouts() {
-      clearTimeout(this.delay);
-      clearTimeout(this.timeout);
-    }
-
-    retry = () => {
-      this.setState({error: null, loading: true, timedOut: false});
-      chunk = chunkLoader(opts.loader);
-      this.loadModule();
-    };
 
     render() {
-      if (this.chunkState.loading || this.chunkState.error) {
+      const {loading, error, pastDelay, timedOut, loadedChunk} = this.state;
+      if (loading || error) {
         const loading = opts.loading ? opts.loading : 'loading';
         return React.createElement(loading as any, {
-          isLoading: this.chunkState.loading,
-          pastDelay: this.chunkState.pastDelay,
-          timedOut: this.chunkState.timedOut,
-          error: this.chunkState.error,
+          isLoading: loading,
+          pastDelay,
+          timedOut,
+          error,
           retry: this.retry,
         });
-      } else if (this.chunkState.loaded) {
-        return opts.render && opts.render(this.chunkState.loaded, this.props);
+      } else if (loadedChunk) {
+        return opts.render && opts.render(loadedChunk, this.props);
       } else {
         return null;
       }
@@ -161,31 +151,42 @@ function asyncChunkGenerator(
         }, opts.timeout);
       }
 
-      const update = () => {
-        if (!this.mounted) {
-          return;
-        }
-
-        this.setState({
-          error: chunk && chunk.error,
-          loaded: chunk && chunk.loadedChunk,
-          loading: chunk && chunk.loading,
-        });
-
-        this._clearTimeouts();
-      };
-
       const promise = chunk && chunk.promise;
       promise &&
         promise
           // eslint-disable-next-line
           .then(() => {
-            update();
+            this.update();
           })
           .catch(err => {
-            update();
+            this.update();
             throw err;
           });
+    }
+
+    update() {
+      if (!this.mounted) {
+        return;
+      }
+
+      this.setState({
+        error: chunk && chunk.error,
+        loadedChunk: chunk && chunk.loadedChunk,
+        loading: (chunk && chunk.loading) || false,
+      });
+
+      this.clearTimeouts();
+    }
+
+    retry() {
+      this.setState({error: null, loading: true, timedOut: false});
+      chunk = chunkLoader(opts.loader);
+      this.loadModule();
+    }
+
+    clearTimeouts() {
+      clearTimeout(this.delay);
+      clearTimeout(this.timeout);
     }
   };
 }
