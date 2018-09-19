@@ -1,7 +1,9 @@
 import './console-wrapper';
 import 'isomorphic-fetch';
 import Enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
+
+// eslint-disable-next-line import/default
+import Adapter from './vendor/adapter';
 
 if (Intl.PluralRules == null) {
   require('intl-pluralrules');

@@ -6,24 +6,15 @@ import Key, {ModifierKey} from '../keys';
 import Shortcut from '../Shortcut';
 import ShortcutProvider from '../ShortcutProvider';
 
-import ShortcutWithFocus from './ShortcutWithRef';
-
-import ShortcutManager from '../ShortcutManager';
-
 describe('<Shortcut />', () => {
   describe('allowdefault', () => {
     it('works', () => {
       const fooSpy = jest.fn();
 
-      const ctxt = new ShortcutManager();
-
-      shallow(
+      mount(
         <ShortcutProvider>
           <Shortcut key="foo" ordered={['f', 'o', 'o']} onMatch={fooSpy} />
         </ShortcutProvider>,
-        {
-          context: ctxt,
-        },
       );
 
       keydown('f');

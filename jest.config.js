@@ -13,6 +13,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js'],
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
+    '^.+\\.js$': 'babel-jest',
     '\\.(gql|graphql)$': 'jest-transform-graphql',
   },
   testRegex: '.*\\.test\\.tsx?$',
