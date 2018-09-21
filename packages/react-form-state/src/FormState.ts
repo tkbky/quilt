@@ -26,10 +26,10 @@ interface SubmitHandler<Fields> {
     | MaybePromise<void>;
 }
 
-export type ValidatorDictionary<Fields> = {
-  [FieldPath in keyof Fields]: MaybeArray<
-    ValidationFunction<Fields[FieldPath], Fields>
-  >
+export type Validator<T, F> = MaybeArray<ValidationFunction<T, F>>;
+
+export type ValidatorDictionary<FieldMap> = {
+  [FieldPath in keyof FieldMap]: Validator<FieldMap[FieldPath], FieldMap>
 };
 
 interface ValidationFunction<Value, Fields> {
@@ -122,19 +122,29 @@ export default class FormState<
     };
   }
 
+  public validateForm() {
+    return new Promise(resolve => {
+      this.setState(runAllValidators, () => resolve());
+    });
+  }
+
   private get dirty() {
     return this.state.dirtyFields.length > 0;
   }
 
   private get valid() {
-    const {errors, fields} = this.state;
+    const {errors} = this.state;
 
-    const fieldsWithErrors = Object.keys(fields).filter(fieldPath => {
+    return !this.hasClientErrors && errors.length === 0;
+  }
+
+  private get hasClientErrors() {
+    const {fields} = this.state;
+
+    return Object.keys(fields).some(fieldPath => {
       const {error} = fields[fieldPath];
       return error != null;
     });
-
-    return fieldsWithErrors.length === 0 && errors.length === 0;
   }
 
   private get fields() {
@@ -165,6 +175,11 @@ export default class FormState<
     }
 
     this.setState({submitting: true});
+
+    await this.validateForm();
+    if (this.hasClientErrors) {
+      return;
+    }
 
     const errors = await onSubmit(formData);
 
@@ -318,27 +333,8 @@ export default class FormState<
 
     const {validators = {}} = this.props;
     const {fields} = this.state;
-    const validate = validators[fieldPath];
 
-    if (typeof validate === 'function') {
-      // eslint-disable-next-line consistent-return
-      return validate(value, fields);
-    }
-
-    if (!isArray(validate)) {
-      return;
-    }
-
-    const errors = validate
-      .map(validator => validator(value, fields))
-      .filter(input => input != null);
-
-    if (errors.length === 0) {
-      return;
-    }
-
-    // eslint-disable-next-line consistent-return
-    return errors;
+    runValidator(validators[fieldPath], value, fields);
   }
 
   private updateRemoteErrors(errors: RemoteError[]) {
@@ -386,4 +382,53 @@ function createFormState<Fields>(values: Fields): State<Fields> {
 
 function initialValuesFromFields<Fields>(fields: FieldStates<Fields>): Fields {
   return mapObject(fields, ({initialValue}) => initialValue);
+}
+
+function runValidator<T, F>(
+  validate: Validator<T, F> = () => {},
+  value: T,
+  fields: FieldStates<F>,
+) {
+  if (typeof validate === 'function') {
+    // eslint-disable-next-line consistent-return
+    return validate(value, fields);
+  }
+
+  if (!isArray(validate)) {
+    // eslint-disable-next-line consistent-return
+    return;
+  }
+
+  const errors = validate
+    .map(validator => validator(value, fields))
+    .filter(input => input != null);
+
+  if (errors.length === 0) {
+    // eslint-disable-next-line consistent-return
+    return;
+  }
+
+  // eslint-disable-next-line consistent-return
+  return errors;
+}
+
+function runAllValidators<FieldMap>(
+  state: State<FieldMap>,
+  props: Props<FieldMap>,
+) {
+  const {fields} = state;
+  const {validators} = props;
+
+  if (!validators) {
+    return null;
+  }
+
+  const updatedFields = mapObject(fields, (field, path) => {
+    return runValidator(validators[path], field.value, fields);
+  });
+
+  return {
+    ...state,
+    fields: updatedFields,
+  } as State<FieldMap>;
 }
