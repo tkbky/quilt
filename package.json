@@ -32,6 +32,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "moduleNameMapper": {
+    "^@fooBar/(.*)": "<rootDir>/src/barFoo/$1"
+  },
   "devDependencies": {
     "@types/enzyme-adapter-react-16": "^1.0.3",
     "@types/jest": "^23.1.1",
