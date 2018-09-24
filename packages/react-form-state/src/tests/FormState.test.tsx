@@ -523,7 +523,7 @@ describe('<FormState />', () => {
   });
 
   describe('field submit', () => {
-    it('calls onSubmit() with the current formDetails, other than the submit function, when submit() is called', () => {
+    it('calls onSubmit() with the current formDetails, other than the submit function, when submit() is called', async () => {
       const renderPropSpy = jest.fn(() => null);
       const onSubmitSpy = jest.fn();
       const product = faker.commerce.productName();
@@ -538,11 +538,67 @@ describe('<FormState />', () => {
         renderPropSpy,
       );
 
-      submit();
+      await submit();
 
       expect(onSubmitSpy).toHaveBeenLastCalledWith(
         expect.objectContaining(formData),
       );
+    });
+
+    it('calls all validators on submit', async () => {
+      const renderPropSpy = jest.fn(() => null);
+      const productValidatorSpy = jest.fn();
+      const skuValidatorSpy = jest.fn();
+
+      mount(
+        <FormState
+          initialValues={{
+            product: faker.commerce.productName,
+            sku: faker.commerce.sku,
+          }}
+          validators={{
+            product: productValidatorSpy,
+            sku: skuValidatorSpy,
+          }}
+          onSubmit={noop}
+        >
+          {renderPropSpy}
+        </FormState>,
+      );
+
+      const {submit} = lastCallArgs(renderPropSpy);
+
+      await submit();
+
+      expect(productValidatorSpy).toBeCalled();
+      expect(skuValidatorSpy).toBeCalled();
+    });
+
+    it('does not call onSubmit when a validator fails', async () => {
+      const renderPropSpy = jest.fn(() => null);
+      const submitSpy = jest.fn();
+
+      mount(
+        <FormState
+          initialValues={{
+            product: faker.commerce.productName,
+          }}
+          validators={{
+            product() {
+              return 'product bad';
+            },
+          }}
+          onSubmit={submitSpy}
+        >
+          {renderPropSpy}
+        </FormState>,
+      );
+
+      const {submit} = lastCallArgs(renderPropSpy);
+
+      await submit();
+
+      expect(submitSpy).not.toBeCalled();
     });
 
     it('when onSubmit() returns a promise, re-renders with submitting true while waiting for it to resolve/reject', () => {
@@ -781,3 +837,5 @@ describe('<FormState />', () => {
     });
   });
 });
+
+function noop() {}

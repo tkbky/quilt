@@ -355,6 +355,8 @@ function MyComponent() {
 }
 ```
 
+`<FormState />` also runs _all_ validators on the form before executing `onSubmit`. If any of the validators return an error, the submit is cancelled and `onSubmit` is not run.
+
 To learn more about building validators, and the built in functions exposed by this package, check out the [validators guide](/validators.md).
 
 ## Compound fields

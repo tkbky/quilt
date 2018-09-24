@@ -142,8 +142,8 @@ export default class FormState<
     const {fields} = this.state;
 
     return Object.keys(fields).some(fieldPath => {
-      const {error} = fields[fieldPath];
-      return error != null;
+      const field = fields[fieldPath];
+      return field.error != null;
     });
   }
 
@@ -334,7 +334,8 @@ export default class FormState<
     const {validators = {}} = this.props;
     const {fields} = this.state;
 
-    runValidator(validators[fieldPath], value, fields);
+    // eslint-disable-next-line consistent-return
+    return runValidator(validators[fieldPath], value, fields);
   }
 
   private updateRemoteErrors(errors: RemoteError[]) {
@@ -424,7 +425,10 @@ function runAllValidators<FieldMap>(
   }
 
   const updatedFields = mapObject(fields, (field, path) => {
-    return runValidator(validators[path], field.value, fields);
+    return {
+      ...field,
+      error: runValidator(validators[path], field.value, fields),
+    };
   });
 
   return {
