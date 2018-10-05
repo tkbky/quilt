@@ -18,6 +18,11 @@ module.exports = function(plop) {
         message: "What should this package's description be?",
       },
       {
+        type: 'input',
+        name: 'sizeLimit',
+        message: "What should this package's size limit be? Ex. 10KB",
+      },
+      {
         type: 'confirm',
         name: 'usedInBrowser',
         message: 'Is this package intended for use in the browser?',
@@ -59,6 +64,17 @@ module.exports = function(plop) {
         path:
           'packages/{{kebabCase name}}/src/test/{{properCase name}}.test.ts',
         templateFile: 'templates/test.hbs.ts',
+      },
+      {
+        type: 'append',
+        path: '.size-limit.js',
+        pattern: /module\.exports\s=\s\[\n/,
+        templateFile: 'templates/.size-limit.hbs.js',
+        data: {
+          sizeLimit: '{{sizeLimit}}',
+        },
+        separator: '',
+        force: true,
       },
       sharedActions.docs,
     ],
